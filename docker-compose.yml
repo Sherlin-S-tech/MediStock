@@ -1,0 +1,22 @@
+services:
+  medicine-stock:
+    image: ${APP_IMAGE:-medicine-stock}:${APP_TAG:-latest}
+    build: .
+    container_name: medicine-stock
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-local-demo-change-this-secret}
+      DATABASE_PATH: /app/data/medicines.db
+      NEAR_EXPIRY_DAYS: ${NEAR_EXPIRY_DAYS:-30}
+    volumes:
+      - medicine-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+volumes:
+  medicine-data:

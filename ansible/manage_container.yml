@@ -1,0 +1,30 @@
+---
+- name: Manage medicine stock container
+  hosts: medicine_hosts
+  become: false
+  tasks:
+    - name: Ensure persistent named volume exists
+      community.docker.docker_volume:
+        name: "{{ app_volume }}"
+        state: present
+    - name: Ensure application container uses requested image and configuration
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        image: "{{ app_image }}"
+        pull: false
+        state: started
+        restart_policy: unless-stopped
+        published_ports: ["{{ app_port }}:5000"]
+        volumes: ["{{ app_volume }}:/app/data"]
+        env:
+          SECRET_KEY: "{{ lookup('env', 'MEDICINE_STOCK_SECRET_KEY') | default('local-demo-change-this-secret', true) }}"
+          DATABASE_PATH: /app/data/medicines.db
+          NEAR_EXPIRY_DAYS: "30"
+    - name: Verify container health endpoint
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ app_port }}/health"
+        status_code: 200
+      register: health
+      retries: 12
+      delay: 5
+      until: health.status == 200
