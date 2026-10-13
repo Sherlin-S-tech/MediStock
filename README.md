@@ -63,19 +63,13 @@ pytest -q --junitxml=test-results.xml
 
 ## Git and GitHub lab guide
 
-The starter directory may not itself be a Git checkout; no remote is configured, and no push is performed automatically. Initialize it and replace the example remote with your own:
+The public project repository is https://github.com/Sherlin-S-tech/MediStock on branch `main`. Clone it or update an existing checkout with:
 
 ```sh
-git init -b main
-git status --short
-git add .
-git commit -m "Build medicine inventory and DevOps demo"
-git remote add origin https://github.com/OWNER/REPOSITORY.git
-git remote -v
-git push -u origin main
-git fetch origin
+git clone https://github.com/Sherlin-S-tech/MediStock.git
+cd MediStock
 git pull --ff-only origin main
-git clone https://github.com/OWNER/REPOSITORY.git
+git status --short --branch
 git log --oneline --decorate --graph -10
 git switch -c feature/inventory
 git switch main
@@ -84,18 +78,34 @@ git merge --no-ff feature/inventory
 
 Use branches such as `feature/inventory`, `feature/expiry-alerts`, and `feature/devops`. Commit coherent work before merging. For a conflict, run `git status`, edit conflicted files to resolve `<<<<<<<`, `=======`, and `>>>>>>>`, then `git add <resolved-files>` and `git commit`. Review `git diff` before committing.
 
-## Jenkins pipeline setup
+## Jenkins continuous integration and delivery
 
-The root `Jenkinsfile` checks out SCM, creates a Python environment, compiles application files, validates Ansible YAML, runs pytest, publishes `test-results.xml`, then builds `APP_IMAGE:APP_TAG`. Tests gate image build and deployment. `DEPLOY_ENABLED` defaults to false.
+The root `Jenkinsfile` checks out the selected revision, installs Python dependencies, validates Python, Ansible YAML/playbooks, and Docker Compose configuration, then runs pytest. A test failure marks the build failed, publishes `test-results.xml` when pytest produced it, and skips the Docker build and deployment. After successful tests it builds the configurable `APP_IMAGE:APP_TAG` image. `APP_TAG` defaults to the checked-out commit's 12-character SHA; `APP_TAG_OVERRIDE` can set a valid Docker tag. `DEPLOY_ENABLED` defaults to false. When enabled, Ansible deploys that same tagged image and Jenkins checks `/health` on the target.
 
-1. Install Jenkins LTS on Linux or use a lab server. On the selected agent install Git, Python 3, pip, Docker Engine/CLI, Ansible Core and `community.docker`. Install Pipeline, Git, and JUnit plugins.
-2. Create a Pipeline job using **Pipeline script from SCM**, Git, your repository URL, branch `main`, and script path `Jenkinsfile`.
-3. Add a Jenkins Secret Text credential with ID `medicine-stock-secret-key`. Configure `APP_IMAGE` as a Jenkins environment setting if needed. Supply the deployment key through Jenkins Credentials to `MEDICINE_STOCK_SECRET_KEY`; use SSH credentials for a real remote host, never committed secrets.
-4. Give the agent only the Docker/Ansible access needed. Docker group access commonly grants host-root-equivalent control; prefer a dedicated controlled deployment agent.
-5. For GitHub webhook builds, set the repository webhook to `https://<publicly-reachable-jenkins>/github-webhook/` and enable the GitHub hook trigger. GitHub cannot reach localhost-only Jenkins. A lab alternative is **Build Now** after a push.
-6. Review **Console Output** and published **Test Result**. Failed tests stop later stages; failed deployment marks the build failed.
+### Jenkins agent requirements
 
-If the agent cannot reach Docker, Jenkins cannot automate that stage there. Use local Docker/Compose commands and state that image build/deploy was manual. Jenkins passes the same commit-tagged image to Ansible; deployment is opt-in.
+Install Jenkins LTS by following the [official Linux installation guide](https://www.jenkins.io/doc/book/installing/linux/); the current guide lists Java 21 or later as a prerequisite. Use a controlled Linux Jenkins agent, or WSL2 with Docker Desktop integration for a local lab. The agent needs Git, Python 3 and pip, Docker CLI with the Compose plugin, Ansible Core, and the `community.docker` Ansible collection. Install the Jenkins Pipeline, Git, GitHub, JUnit, and Credentials Binding plugins. Confirm the agent can run `git --version`, `python3 --version`, `docker info`, `docker compose version`, and `ansible-playbook --version`.
+
+### Create and configure a Pipeline job
+
+1. In Jenkins, choose **New Item**, enter a job name, select **Pipeline**, and choose **Pipeline script from SCM** in the job configuration.
+2. Select **Git** and set the repository URL to `https://github.com/Sherlin-S-tech/MediStock.git`, branch to `*/main`, and script path to `Jenkinsfile`. The repository is public, so checkout does not need a GitHub token.
+3. Enable **GitHub hook trigger for GITScm polling** in the job's build triggers. The Jenkinsfile also declares the GitHub push trigger.
+4. Save, then select **Build with Parameters**. Set `APP_IMAGE` (default `medicine-stock`), optionally set `APP_TAG_OVERRIDE`, and leave `DEPLOY_ENABLED` off for a CI-only build.
+
+For deployments, create a Jenkins **Secret Text** credential with ID `medicine-stock-secret-key`. It is only read when `DEPLOY_ENABLED` is on and is passed to Ansible through the environment; no secret belongs in the repository. The checked-in inventory targets `localhost`, so Ansible uses the same Docker engine as the Jenkins agent and does not need SSH credentials. For a remote host, configure Ansible's SSH access with Jenkins-managed credentials and make the tested image available to that host; the current playbooks use `pull: false` and do not publish the image to a registry.
+
+### GitHub webhook and manual builds
+
+In the GitHub repository, open **Settings → Webhooks → Add webhook**. Set the payload URL to an HTTPS Jenkins endpoint ending in `/github-webhook/`, choose `application/json`, and send push events. GitHub must be able to reach that endpoint. A Jenkins server available only at `localhost` cannot receive GitHub webhooks directly; use a properly secured, publicly reachable reverse proxy or webhook relay. Do not expose an unprotected Jenkins server to the internet.
+
+For a local lab without an accessible webhook, push code and select **Build Now** in Jenkins (or **Build with Parameters** to choose the image tag and deployment setting). Open the build's **Console Output** for stage logs. Open **Test Result** for the JUnit report. A failed Syntax Validation stage points to Python, Ansible, YAML, or Compose configuration; a failed Automated Tests stage skips image build and deployment; Docker or Ansible failures identify agent permissions or deployment configuration problems.
+
+### Docker access and manual alternative
+
+The Jenkins agent needs permission to contact the Docker daemon for Compose configuration and image builds. Docker group membership can grant host-root-equivalent control. Prefer an isolated, controlled Jenkins agent or a restricted/rootless Docker service; do not casually add a shared Jenkins service account to the host's Docker group. The Ansible target also needs Docker access to deploy containers. The local example uses the same Docker engine for both operations.
+
+If Docker is unavailable to the Jenkins agent, CI can still run through test reporting, but the Docker build and deployment stages are not automated. On a controlled machine with Docker access, build and run the app manually with `docker compose up --build -d`, then check `http://localhost:5000/health`. The Ansible deployment is only automated by Jenkins when `DEPLOY_ENABLED` is selected and its target and credentials are configured.
 
 ## Ansible deployment
 
@@ -132,5 +142,5 @@ For a remote Linux host, configure its address, SSH user/key, and privilege esca
 
 See [architecture diagrams](docs/architecture.md) and the [project report](docs/project_report.md). Configuration keys are `SECRET_KEY`, `DATABASE_PATH`, and `NEAR_EXPIRY_DAYS`.
 
-The local run, dashboard, and verification evidence is in [Project Run and GitHub Handoff](docs/Project_Run_and_GitHub_Evidence.docx). Demo inventory is stored in the ignored local SQLite database; use the seed script after cloning to recreate fictional sample records.
+The local run and dashboard evidence is in [Project Run and GitHub Handoff](docs/Project_Run_and_GitHub_Evidence.docx). SQLite databases are gitignored; a fresh database automatically gets the fictional sample records.
 
