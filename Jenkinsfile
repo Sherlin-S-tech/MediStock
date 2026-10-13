@@ -63,7 +63,7 @@ pipeline {
 
     stage('Automated Tests') {
       steps {
-        sh '.venv/bin/pytest -q --junitxml=test-results.xml'
+        sh 'PYTHONPATH="$WORKSPACE" .venv/bin/pytest -q --junitxml=test-results.xml'
       }
       post {
         unsuccessful {
