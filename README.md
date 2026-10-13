@@ -132,3 +132,5 @@ For a remote Linux host, configure its address, SSH user/key, and privilege esca
 
 See [architecture diagrams](docs/architecture.md) and the [project report](docs/project_report.md). Configuration keys are `SECRET_KEY`, `DATABASE_PATH`, and `NEAR_EXPIRY_DAYS`.
 
+The local run, dashboard, and verification evidence is in [Project Run and GitHub Handoff](docs/Project_Run_and_GitHub_Evidence.docx). Demo inventory is stored in the ignored local SQLite database; use the seed script after cloning to recreate fictional sample records.
+
