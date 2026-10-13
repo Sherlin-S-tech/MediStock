@@ -2,6 +2,7 @@ pipeline {
   agent { label 'linux' }
 
   options {
+    skipDefaultCheckout(true)
     timestamps()
     disableConcurrentBuilds()
   }
@@ -14,10 +15,6 @@ pipeline {
     string(name: 'APP_IMAGE', defaultValue: 'medicine-stock', description: 'Lowercase Docker image name, optionally with namespace (for example owner/medicine-stock)')
     string(name: 'APP_TAG_OVERRIDE', defaultValue: '', description: 'Optional Docker tag override; leave blank to use the checked-out commit SHA')
     booleanParam(name: 'DEPLOY_ENABLED', defaultValue: false, description: 'Deploy the tested image to the configured Ansible target')
-  }
-
-  environment {
-    JUNIT_PUBLISHED = 'false'
   }
 
   stages {
@@ -68,6 +65,11 @@ pipeline {
       steps {
         sh '.venv/bin/pytest -q --junitxml=test-results.xml'
       }
+      post {
+        unsuccessful {
+          junit allowEmptyResults: true, testResults: 'test-results.xml'
+        }
+      }
     }
 
     stage('Publish Test Results') {
@@ -75,7 +77,6 @@ pipeline {
         script {
           if (fileExists('test-results.xml')) {
             junit allowEmptyResults: true, testResults: 'test-results.xml'
-            env.JUNIT_PUBLISHED = 'true'
           } else {
             echo 'No JUnit report was generated.'
           }
@@ -111,13 +112,6 @@ pipeline {
   }
 
   post {
-    always {
-      script {
-        if (env.JUNIT_PUBLISHED != 'true') {
-          junit allowEmptyResults: true, testResults: 'test-results.xml'
-        }
-      }
-    }
     success {
       echo "Pipeline succeeded for ${env.TESTED_IMAGE ?: 'the selected revision'}"
     }

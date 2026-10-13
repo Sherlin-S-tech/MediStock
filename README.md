@@ -139,6 +139,7 @@ For a remote Linux host, configure its address, SSH user/key, and privilege esca
 - **Missing Ansible module:** install `community.docker` and Python Docker SDK on the controller.
 - **CSRF rejection:** submit a form loaded from the app with its session token; do not disable CSRF outside isolated tests.
 - **Dependency installation failure:** check Python and package-index/network access, then retry `pip install -r requirements.txt`.
+- **Jenkins Linux-agent checkout fails with `git.exe`:** under **Manage Jenkins → Tools → Git installations**, use `git` (resolved from `PATH`) rather than a Windows-only `git.exe` path. Confirm Git is installed on the Linux agent with `git --version`; the Jenkinsfile performs one explicit checkout on the selected agent.
 
 See [architecture diagrams](docs/architecture.md) and the [project report](docs/project_report.md). Configuration keys are `SECRET_KEY`, `DATABASE_PATH`, and `NEAR_EXPIRY_DAYS`.
 
