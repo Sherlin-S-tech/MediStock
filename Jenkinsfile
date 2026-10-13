@@ -16,7 +16,7 @@ pipeline {
     stage('Syntax Validation') {
       steps {
         sh '''
-          .venv/bin/python -m py_compile app.py database.py services.py scripts/seed_demo_data.py
+          .venv/bin/python -m py_compile app.py database.py demo_data.py services.py scripts/seed_demo_data.py
           .venv/bin/python -c "import yaml; [yaml.safe_load(open(p, encoding='utf-8')) for p in ['ansible/deploy.yml','ansible/manage_container.yml']]"
         '''
       }
