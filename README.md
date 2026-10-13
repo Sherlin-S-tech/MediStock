@@ -84,7 +84,7 @@ The root `Jenkinsfile` checks out the selected revision, installs Python depende
 
 ### Jenkins agent requirements
 
-Install Jenkins LTS by following the [official Linux installation guide](https://www.jenkins.io/doc/book/installing/linux/); the current guide lists Java 21 or later as a prerequisite. Use a controlled Linux Jenkins agent, or WSL2 with Docker Desktop integration for a local lab. The agent needs Git, Python 3 and pip, Docker CLI with the Compose plugin, Ansible Core, and the `community.docker` Ansible collection. Install the Jenkins Pipeline, Git, GitHub, JUnit, and Credentials Binding plugins. Confirm the agent can run `git --version`, `python3 --version`, `docker info`, `docker compose version`, and `ansible-playbook --version`.
+Install Jenkins LTS by following the [official Linux installation guide](https://www.jenkins.io/doc/book/installing/linux/); the current guide lists Java 21 or later as a prerequisite. Use a controlled Linux Jenkins agent, or WSL2 with Docker Desktop integration for a local lab. The agent needs Git, Python 3, pip and the `python3-venv` package, Docker CLI with the Compose plugin, Ansible Core, and the `community.docker` Ansible collection. Install the Jenkins Pipeline, Git, GitHub, JUnit, and Credentials Binding plugins. Confirm the agent can run `git --version`, `python3 --version`, `python3 -m venv --help`, `docker info`, `docker compose version`, and `ansible-playbook --version`.
 
 ### Create and configure a Pipeline job
 
@@ -112,7 +112,7 @@ If Docker is unavailable to the Jenkins agent, CI can still run through test rep
 Ansible is not assumed to be native on Windows. Use WSL2 Ubuntu or Linux and install:
 
 ```sh
-sudo apt update && sudo apt install -y ansible-core python3-pip
+sudo apt update && sudo apt install -y ansible-core python3-pip python3-venv
 python3 -m pip install --user docker
 ansible-galaxy collection install community.docker
 docker info
