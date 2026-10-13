@@ -9,6 +9,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-local-demo-change-this-secret}
       DATABASE_PATH: /app/data/medicines.db
       NEAR_EXPIRY_DAYS: ${NEAR_EXPIRY_DAYS:-30}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     volumes:
       - medicine-data:/app/data
     restart: unless-stopped

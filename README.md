@@ -15,7 +15,7 @@ $env:DATABASE_PATH = ".\data\medicines.db"
 python app.py
 ```
 
-Open http://localhost:5000. Visit `/health` to check service and database connectivity. Run `python scripts/seed_demo_data.py` to load fictional records; it is safe to repeat. Local SQLite data lives under `data/` and is gitignored. Set a random `SECRET_KEY` outside a short-lived demo.
+Open http://localhost:5000. Visit `/health` to check service and database connectivity. A fresh, empty database is automatically initialized with three fictional example batches, matching the dashboard demo. Existing inventories are preserved. To add any missing examples manually, run `python scripts/seed_demo_data.py`; it is safe to repeat. Set `SEED_DEMO_DATA=false` to disable automatic seeding. Local SQLite data lives under `data/` and is gitignored. Set a random `SECRET_KEY` outside a short-lived demo.
 
 ## Docker Compose and persistence
 
@@ -29,7 +29,7 @@ docker compose logs -f medicine-stock
 curl -fsS http://localhost:5000/health
 ```
 
-Browse http://localhost:5000. Compose creates named volume `medicine-data` mounted at `/app/data`. Update with `docker compose build medicine-stock && docker compose up -d --no-deps medicine-stock`; the volume stays attached. For a persistence demo, add a batch in the UI, rebuild/recreate as above, then find the batch again. Do not run `docker compose down -v` during normal updates; `-v` removes persistent data. Back up a volume from a Linux shell with `docker run --rm -v medicine-data:/data -v "$PWD:/backup" alpine tar czf /backup/medicine-data-backup.tgz -C /data .`.
+Browse http://localhost:5000. On first start, Compose creates named volume `medicine-data` mounted at `/app/data`; the empty database is seeded with the three demo batches. Existing volume contents are preserved. Update with `docker compose build medicine-stock && docker compose up -d --no-deps medicine-stock`; the volume stays attached. For a persistence demo, add a batch in the UI, rebuild/recreate as above, then find the batch again. Do not run `docker compose down -v` during normal updates; `-v` removes persistent data. Back up a volume from a Linux shell with `docker run --rm -v medicine-data:/data -v "$PWD:/backup" alpine tar czf /backup/medicine-data-backup.tgz -C /data .`.
 
 Container and host mapping use port 5000. If busy, change host mapping to `5001:5000`. For a Docker daemon error, start Docker and check `docker info`; on Linux, confirm authorized daemon access. If tags differ, rebuild with the same `APP_IMAGE`/`APP_TAG` passed to Ansible. If data appears missing, inspect `docker volume ls`, `docker inspect medicine-stock`, and confirm `medicine-data:/app/data`; do not delete the volume.
 

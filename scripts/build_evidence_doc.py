@@ -1,5 +1,4 @@
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -11,50 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 OUT = DOCS / "Project_Run_and_GitHub_Evidence.docx"
 WEB = DOCS / "dashboard.png"
-TERM = DOCS / "terminal-transcript.png"
-
-def font(size, bold=False, mono=False):
-    names = (["C:/Windows/Fonts/consolab.ttf", "C:/Windows/Fonts/consola.ttf"] if mono else
-             (["C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/segoeui.ttf"] if bold else ["C:/Windows/Fonts/segoeui.ttf"]))
-    for name in names:
-        if Path(name).exists():
-            try:
-                return ImageFont.truetype(name, size)
-            except OSError:
-                pass
-    return ImageFont.load_default()
-
-def make_terminal_image():
-    width, height = 1600, 900
-    img = Image.new("RGB", (width, height), "#0b1218")
-    draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle((32, 28, width-32, height-28), radius=22, fill="#111b23", outline="#253540", width=2)
-    draw.rounded_rectangle((32, 28, width-32, 100), radius=22, fill="#182630")
-    draw.rectangle((32, 78, width-32, 100), fill="#182630")
-    for x, color in [(64, "#ff6b65"), (91, "#f6c455"), (118, "#54c88b")]:
-        draw.ellipse((x, 55, x+15, 70), fill=color)
-    draw.text((155, 49), "PowerShell  |  Medicine Stock and Expiry Tracker", font=font(25, bold=True), fill="#d7e2e8")
-    draw.text((64, 124), "Command transcript rendered from executed local checks", font=font(19), fill="#8fa5b3")
-    rows = [
-        ("> python -m pytest -q --basetemp .pytesttmp --junitxml=test-results.xml", "#8bd49c"),
-        ("..............                                                   [100%]", "#d6e0e7"),
-        ("--------------- generated xml file: D:\\Devops\\test-results.xml ----------------", "#8fa5b3"),
-        ("14 passed in 1.06s", "#7ee0a1"),
-        ("> docker compose config --quiet", "#8bd49c"),
-        ("Compose configuration valid (exit code 0)", "#7ee0a1"),
-        ("> Invoke-RestMethod http://127.0.0.1:5000/health | ConvertTo-Json -Compress", "#8bd49c"),
-        ('{"database":"ok","status":"ok"}', "#d6e9f0"),
-        ("> git status --short --branch", "#8bd49c"),
-        ("## main", "#d6e0e7"),
-        ("> git log -1 --oneline", "#8bd49c"),
-        ("d044db3 Build medicine stock and expiry tracking project", "#d6e0e7"),
-    ]
-    y = 177
-    for line, color in rows:
-        draw.text((66, y), "PS D:\\Devops" + line if line.startswith(">") else line, font=font(21, mono=True), fill=color)
-        y += 55
-    draw.text((65, height-74), "Local verification only  •  no GitHub remote configured yet", font=font(17), fill="#91a5b0")
-    img.save(TERM)
 
 def shade(cell, fill):
     tc_pr = cell._tc.get_or_add_tcPr()
@@ -129,7 +84,6 @@ def format_table(table):
                     run.font.size = Pt(8.2)
 
 def build():
-    make_terminal_image()
     doc = Document()
     sec = doc.sections[0]
     sec.top_margin = Inches(0.48)
@@ -165,7 +119,7 @@ def build():
     p = doc.add_paragraph()
     r = p.add_run("Medicine Stock and Expiry Tracking System with DevOps Automation")
     r.bold = True; r.font.size = Pt(11); r.font.color.rgb = RGBColor(18,120,95)
-    p = doc.add_paragraph("This hand-in records the running local app, the fictional batches currently loaded, and verification commands. The project is committed locally on branch main; publishing will need the GitHub owner and repository details.")
+    p = doc.add_paragraph("This hand-in records the running local app and the fictional batches currently loaded. The project is committed locally on branch main and is prepared for publication to Sherlin-S-tech/MediStock as a public repository.")
     p.paragraph_format.space_after = Pt(6)
 
     doc.add_heading("Live website", level=1)
@@ -201,18 +155,13 @@ def build():
         '$env:SECRET_KEY = "replace-with-a-random-local-secret"',
         "python app.py",
     ])
-    doc.add_paragraph("The database is created automatically. Add your own records with Add medicine; demo records remain available as examples.")
-    doc.add_heading("Terminal verification transcript", level=1)
-    doc.add_paragraph("This formatted transcript reproduces command output from the local checks. The dashboard above is a browser screenshot.")
-    doc.add_picture(str(TERM), width=Inches(6.92))
-    cap = doc.add_paragraph("Checks shown: pytest, Compose configuration, health endpoint, and local Git status.")
-    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    for run in cap.runs:
-        run.italic = True; run.font.size = Pt(8); run.font.color.rgb = RGBColor(107,126,117)
+    doc.add_paragraph("An empty database is initialized with the three fictional records listed above. Existing inventories are preserved. Set SEED_DEMO_DATA=false to disable automatic seeding.")
+    doc.add_heading("Terminal screenshots", level=1)
+    doc.add_paragraph("No terminal image is included because an original PowerShell window capture was not available in this session.")
 
     doc.add_heading("GitHub publishing status", level=1)
-    doc.add_paragraph("A local Git repository is ready on branch main with commit d044db3 (Build medicine stock and expiry tracking project). The working tree is clean. No remote repository has been created or pushed.")
-    doc.add_paragraph("To publish, provide the GitHub username or organization, repository name, and whether it should be public or private. Do not send a password or access token in chat; authenticate through GitHub's normal sign-in or an approved connector when publishing.")
+    doc.add_paragraph("The local main branch tracks origin/main at https://github.com/Sherlin-S-tech/MediStock. The initial project commits are present on that remote; the auto-seeding update still needs to be committed and pushed.")
+    doc.add_paragraph("An original terminal screenshot is not included because the terminal window was not exposed to this session.")
     doc.save(OUT)
     print(OUT)
 

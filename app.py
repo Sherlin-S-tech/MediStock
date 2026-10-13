@@ -12,6 +12,7 @@ from flask import Flask, Response, abort, flash, redirect, render_template, requ
 from flask_wtf.csrf import CSRFProtect
 
 from database import get_db, init_app as init_database
+from demo_data import seed_demo_data
 from services import classify_expiry, dashboard_stats, medicine_status, query_medicines
 
 csrf = CSRFProtect()
@@ -25,6 +26,7 @@ def create_app(test_config=None):
         SECRET_KEY=os.environ.get("SECRET_KEY", "local-development-key-change-me"),
         DATABASE=os.environ.get("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "data", "medicines.db")),
         NEAR_EXPIRY_DAYS=int(os.environ.get("NEAR_EXPIRY_DAYS", "30")),
+        SEED_DEMO_DATA=os.environ.get("SEED_DEMO_DATA", "true").strip().lower() not in {"0", "false", "no", "off"},
         TESTING=False,
     )
     if test_config:
@@ -32,6 +34,11 @@ def create_app(test_config=None):
     csrf.init_app(app)
 
     init_database(app)
+    if app.config["SEED_DEMO_DATA"] and not app.config["TESTING"]:
+        with app.app_context():
+            db = get_db()
+            if db.execute("SELECT 1 FROM medicines LIMIT 1").fetchone() is None:
+                seed_demo_data()
 
     def today():
         return date.fromisoformat(app.config["TODAY"]) if app.config.get("TODAY") else date.today()

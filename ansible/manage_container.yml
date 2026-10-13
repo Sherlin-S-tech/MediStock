@@ -20,6 +20,7 @@
           SECRET_KEY: "{{ lookup('env', 'MEDICINE_STOCK_SECRET_KEY') | default('local-demo-change-this-secret', true) }}"
           DATABASE_PATH: /app/data/medicines.db
           NEAR_EXPIRY_DAYS: "30"
+          SEED_DEMO_DATA: "true"
     - name: Verify container health endpoint
       ansible.builtin.uri:
         url: "http://127.0.0.1:{{ app_port }}/health"
