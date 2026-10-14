@@ -95,7 +95,11 @@ pipeline {
         expression { return params.DEPLOY_ENABLED }
       }
       steps {
-        withCredentials([string(credentialsId: 'medicine-stock-secret-key', variable: 'MEDICINE_STOCK_SECRET_KEY')]) {
+        withCredentials([
+          string(credentialsId: 'medicine-stock-secret-key', variable: 'MEDICINE_STOCK_SECRET_KEY'),
+          string(credentialsId: 'medicine-stock-admin-username', variable: 'MEDICINE_STOCK_ADMIN_USERNAME'),
+          string(credentialsId: 'medicine-stock-admin-password-hash', variable: 'MEDICINE_STOCK_ADMIN_PASSWORD_HASH')
+        ]) {
           sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --extra-vars "app_image=$TESTED_IMAGE"'
         }
       }

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Admin sign in for MediStock medicine inventory">
+  <title>Admin Login · MedStock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/access.css') }}">
+</head>
+<body class="login-page">
+  <main class="login-layout">
+    <section class="login-story" aria-labelledby="about-title">
+      <a class="brand login-brand" href="{{ url_for('login') }}">
+        <span class="brand-icon">✚</span>
+        <span>Med<span class="brand-accent">Stock</span><small>INVENTORY CONTROL</small></span>
+      </a>
+      <div class="login-story-copy">
+        <div class="login-eyebrow"><span></span> MEDICINE INVENTORY MANAGEMENT</div>
+        <h1 id="about-title">Stock clarity for every batch.</h1>
+        <p class="login-lead">MediStock helps administrators organize medicine batches, monitor expiry dates, and keep an eye on stock levels from one simple workspace.</p>
+        <h2>About MediStock</h2>
+        <p class="login-about">A responsive inventory application built with Flask and SQLite, with a delivery workflow using pytest, Jenkins, Docker, and Ansible.</p>
+        <h2 class="feature-title">Application features</h2>
+        <ul class="login-features">
+          <li><span>✓</span><div><b>Batch inventory</b><small>Search, review, add, edit, and remove medicine records.</small></div></li>
+          <li><span>◷</span><div><b>Expiry monitoring</b><small>Group batches into expired, near-expiry, and valid stock.</small></div></li>
+          <li><span>⚑</span><div><b>Low-stock alerts</b><small>Find batches at or below their configured reorder threshold.</small></div></li>
+          <li><span>▧</span><div><b>Reports and health</b><small>Download CSV reports and check service readiness.</small></div></li>
+        </ul>
+      </div>
+      <div class="login-story-footer">MEDSTOCK · DEVOPS LAB <span>23IT723</span></div>
+    </section>
+
+    <section class="login-side" aria-labelledby="login-title">
+      <div class="login-card">
+        <div class="login-icon">♙</div>
+        <div class="login-eyebrow">ADMIN WORKSPACE</div>
+        <h2 id="login-title">Welcome back</h2>
+        <p class="login-subtitle">Sign in with your administrator account to continue.</p>
+        {% if error %}<div class="login-error" role="alert">{{ error }}</div>{% endif %}
+        <form method="post" action="{{ url_for('login') }}" class="login-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button class="login-submit" type="submit">Sign in to MediStock <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="login-security"><span>◈</span> Admin access is required to view or change inventory.</p>
+      </div>
+      <div class="login-side-footer">Medicine Stock &amp; Expiry Tracking System</div>
+    </section>
+  </main>
+</body>
+</html>

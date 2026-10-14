@@ -1,0 +1,42 @@
+.logout-form{margin-left:5px}
+.logout-form button{border:1px solid #e3ebe6;background:#fff;color:#64756d;border-radius:6px;padding:7px 10px;font:600 10px 'DM Sans',sans-serif}
+.logout-form button:hover{border-color:#a7cdbb;color:var(--green-dark);background:#f9fcfa}
+.login-page{min-height:100vh;background:#f4f7f5}
+.login-layout{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr);max-width:1600px;margin:0 auto;background:#fff}
+.login-story{position:relative;display:flex;flex-direction:column;padding:34px clamp(32px,7vw,108px);overflow:hidden;background:linear-gradient(145deg,#f1f8f4 0%,#e8f4ed 100%)}
+.login-story:after{content:'';position:absolute;width:420px;height:420px;right:-220px;top:-185px;border-radius:50%;border:1px solid #cfe4d7;box-shadow:0 0 0 34px #dceee333,0 0 0 74px #dceee322}
+.login-brand{margin:0 0 55px;position:relative;z-index:1}
+.login-story-copy{max-width:620px;margin:auto 0;position:relative;z-index:1}
+.login-eyebrow{display:flex;align-items:center;gap:8px;font-size:9px;font-weight:700;letter-spacing:1.15px;color:#6e887a}
+.login-eyebrow>span{width:7px;height:7px;border-radius:50%;background:#38a174;box-shadow:0 0 0 4px #dcefe4}
+.login-story h1{max-width:530px;margin:17px 0 13px;font:800 clamp(34px,4.1vw,56px)/1.08 'Manrope',sans-serif;letter-spacing:-2.1px;color:#1c342b}
+.login-lead{max-width:570px;color:#71827a;font-size:13px;line-height:1.8}
+.login-story h2{margin:29px 0 7px;font:700 13px 'Manrope',sans-serif;color:#344d41}
+.login-about{max-width:580px;color:#788981;font-size:11px;line-height:1.7;margin:0}
+.login-story h2.feature-title{margin-top:24px}
+.login-features{display:grid;grid-template-columns:1fr 1fr;gap:15px 20px;margin:12px 0 0;padding:0;list-style:none}
+.login-features li{display:flex;align-items:flex-start;gap:10px}
+.login-features li>span{flex:0 0 27px;width:27px;height:27px;border-radius:8px;display:grid;place-items:center;color:#26805d;background:#dcefe4;font-size:13px;font-weight:700}
+.login-features b,.login-features small{display:block}
+.login-features b{font-size:10px;color:#40574b;margin:1px 0 3px}
+.login-features small{font-size:9px;line-height:1.55;color:#87968e}
+.login-story-footer{display:flex;justify-content:space-between;position:relative;z-index:1;margin-top:38px;color:#91a198;font-size:8px;letter-spacing:.7px}
+.login-side{position:relative;display:grid;place-items:center;padding:38px;background:#fff}
+.login-card{width:min(100%,390px)}
+.login-icon{width:44px;height:44px;margin-bottom:25px;border-radius:13px;background:#eaf5ef;color:#21805c;display:grid;place-items:center;font-size:20px}
+.login-card>.login-eyebrow{color:#9ba9a2}
+.login-card h2{margin:8px 0 6px;font:800 27px 'Manrope',sans-serif;letter-spacing:-.8px;color:#20352c}
+.login-subtitle{margin:0;color:#89968f;font-size:11px}
+.login-form{display:grid;gap:8px;margin-top:27px}
+.login-form label{margin-top:6px;color:#53655b;font-size:10px;font-weight:700}
+.login-form input:not([type=hidden]){width:100%;height:43px;padding:0 12px;border:1px solid #e1e9e4;border-radius:7px;outline:0;background:#fff;color:#304239;font:12px 'DM Sans',sans-serif}
+.login-form input:focus{border-color:#7eb79c;box-shadow:0 0 0 3px #e8f5ef}
+.login-submit{height:43px;margin-top:11px;border:0;border-radius:7px;background:#12785f;color:white;font:700 11px 'DM Sans',sans-serif;box-shadow:0 4px 10px #12785f28}
+.login-submit:hover{background:#0c624d}
+.login-submit span{margin-left:6px;font-size:15px}
+.login-error{margin-top:18px;padding:11px 12px;border:1px solid #f2d7d2;border-radius:7px;background:#fff1ef;color:#a94c41;font-size:10px;line-height:1.55}
+.login-security{display:flex;gap:7px;align-items:center;margin-top:20px;color:#95a29b;font-size:9px}
+.login-security span{color:#328363;font-size:13px}
+.login-side-footer{position:absolute;bottom:24px;color:#a0aba5;font-size:9px}
+@media(max-width:900px){.login-layout{grid-template-columns:1fr}.login-story{padding:28px clamp(22px,7vw,60px)}.login-brand{margin-bottom:36px}.login-story-copy{margin:0}.login-story h1{font-size:40px}.login-side{min-height:520px}.login-side-footer{position:static;align-self:end;margin-top:48px}.login-features{gap:13px}}
+@media(max-width:520px){.login-story{padding:24px 20px 28px}.login-brand{margin-bottom:29px}.login-story h1{font-size:34px;letter-spacing:-1.4px}.login-lead{font-size:12px}.login-features{grid-template-columns:1fr;gap:11px}.login-story-footer{margin-top:30px}.login-side{padding:36px 23px;min-height:490px}.login-card h2{font-size:24px}.logout-form button{padding:6px 8px}}

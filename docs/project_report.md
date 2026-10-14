@@ -20,7 +20,7 @@ Objectives are to provide responsive inventory management, dynamic expiry and lo
 
 ## 2. Requirements and technology
 
-The user can add, view, update, delete, search, filter, and sort medicine batches; review dashboard statistics; view expired, near-expiry, and low-stock records; and download inventory, expired, near-expiry, and low-stock reports. Server-side validation, CSRF, parameterized SQL, and test database isolation support reliable operation.
+An administrator signs in before accessing the application. The public login page introduces MediStock and summarizes its features. The user can add, view, update, delete, search, filter, and sort medicine batches; review dashboard statistics; view expired, near-expiry, and low-stock records; and download inventory, expired, near-expiry, and low-stock reports. Server-side validation, CSRF, parameterized SQL, hashed admin passwords, and test database isolation support reliable operation.
 
 | Layer | Technology |
 |---|---|
@@ -39,7 +39,8 @@ The user can add, view, update, delete, search, filter, and sort medicine batche
 
 ```mermaid
 flowchart LR
-  User --> Browser --> UI[HTML / CSS / JavaScript]
+  User --> Browser --> Login[Admin login]
+  Login --> UI[HTML / CSS / JavaScript]
   UI --> Flask[Flask routes]
   Flask --> Validation[Validation and CSRF]
   Validation --> Logic[Business logic and queries]
@@ -102,7 +103,7 @@ Pytest uses a temporary database per test and a controlled date. Coverage includ
 
 ## 6. Limitations and conclusion
 
-The system does not include authentication, multi-user access controls, regulatory certification, or commercial supplier integration. It does not determine whether a medicine is safe or suitable. Future academic work could study audit history, backup automation, and accessibility.
+The system supports one administrator account configured through environment variables and does not include multiple users, role-based access controls, regulatory certification, or commercial supplier integration. It does not determine whether a medicine is safe or suitable. Future academic work could study audit history, backup automation, and accessibility.
 
 The application delivers batch-oriented inventory management, expiry and low-stock monitoring, and reports. Its test-gated Jenkins pipeline, Docker packaging, persistent SQLite storage, and Ansible deployment make it suitable for a DevOps laboratory demonstration.
 

@@ -2,14 +2,17 @@
 from __future__ import annotations
 
 import csv
+import hmac
 import io
 import os
 from datetime import date
 from decimal import Decimal, InvalidOperation
-from functools import wraps
+from datetime import timedelta
+from urllib.parse import urlsplit
 
-from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, abort, flash, redirect, render_template, request, session, url_for
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.security import check_password_hash
 
 from database import get_db, init_app as init_database
 from demo_data import seed_demo_data
@@ -24,9 +27,14 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config.update(
         SECRET_KEY=os.environ.get("SECRET_KEY", "local-development-key-change-me"),
+        ADMIN_USERNAME=os.environ.get("ADMIN_USERNAME", ""),
+        ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH", ""),
         DATABASE=os.environ.get("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "data", "medicines.db")),
         NEAR_EXPIRY_DAYS=int(os.environ.get("NEAR_EXPIRY_DAYS", "30")),
         SEED_DEMO_DATA=os.environ.get("SEED_DEMO_DATA", "true").strip().lower() not in {"0", "false", "no", "off"},
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
         TESTING=False,
     )
     if test_config:
@@ -87,6 +95,58 @@ def create_app(test_config=None):
     @app.context_processor
     def common_context():
         return {"today": today(), "near_expiry_days": app.config["NEAR_EXPIRY_DAYS"]}
+
+    @app.before_request
+    def require_admin_login():
+        if app.testing:
+            return None
+        if request.endpoint in {"login", "health", "static"}:
+            return None
+        if not session.get("admin_authenticated"):
+            next_url = request.full_path.rstrip("?")
+            return redirect(url_for("login", next=next_url))
+        return None
+
+    def safe_local_target(target):
+        if not target or not target.startswith("/") or target.startswith("//"):
+            return None
+        parsed = urlsplit(target)
+        if parsed.scheme or parsed.netloc or "\\" in target:
+            return None
+        return target
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if session.get("admin_authenticated"):
+            return redirect(url_for("dashboard"))
+        error = None
+        next_url = safe_local_target(request.values.get("next", ""))
+        configured_username = app.config["ADMIN_USERNAME"]
+        configured_hash = app.config["ADMIN_PASSWORD_HASH"]
+        if request.method == "POST":
+            username = request.form.get("username", "")
+            password = request.form.get("password", "")
+            if not configured_username or not configured_hash:
+                error = "Admin login is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD_HASH before signing in."
+            else:
+                try:
+                    valid_password = check_password_hash(configured_hash, password)
+                except (TypeError, ValueError):
+                    valid_password = False
+                valid_username = hmac.compare_digest(username, configured_username)
+                if valid_username and valid_password:
+                    session.clear()
+                    session["admin_authenticated"] = True
+                    session.permanent = True
+                    return redirect(next_url or url_for("dashboard"))
+                error = "The username or password is incorrect."
+        return render_template("login.html", error=error, next_url=next_url or "")
+
+    @app.route("/logout", methods=["POST"])
+    def logout():
+        session.clear()
+        flash("You have been signed out.", "success")
+        return redirect(url_for("login"))
 
     @app.route("/")
     def dashboard():

@@ -5,7 +5,8 @@
 ```mermaid
 flowchart LR
   U[User] --> B[Browser]
-  B --> UI[HTML / CSS / JavaScript and Bootstrap]
+  B --> L[Admin login]
+  L --> UI[HTML / CSS / JavaScript and Bootstrap]
   UI --> R[Flask routes]
   R --> V[Server-side validation]
   V --> S[Expiry, stock and report services]
@@ -18,6 +19,8 @@ flowchart LR
 ```
 
 The browser renders responsive templates and submits forms. Flask validates input and uses parameterized SQLite operations. Business rules compute expiry and low stock from records. SQLite persists in the Docker named volume.
+
+The login page is public and includes the application overview and feature list. Other application pages require an admin session. The administrator username and Werkzeug password hash are provided through environment configuration; only the password hash is stored by the application. The health endpoint remains public for container and pipeline checks.
 
 ## DevOps delivery architecture
 
@@ -50,4 +53,5 @@ Jenkins checks out the source, runs syntax/config checks and pytest. A failure p
 | Jenkins | Test gate, image build and optional deployment orchestration |
 | Docker | Repeatable image and persistent runtime volume |
 | Ansible | Idempotent container deployment and health verification |
+| Admin session | Restricts application pages to the configured administrator |
 

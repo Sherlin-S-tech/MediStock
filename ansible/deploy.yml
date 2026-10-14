@@ -23,6 +23,8 @@
           - "{{ app_volume }}:/app/data"
         env:
           SECRET_KEY: "{{ lookup('env', 'MEDICINE_STOCK_SECRET_KEY') | default('local-demo-change-this-secret', true) }}"
+          ADMIN_USERNAME: "{{ lookup('env', 'MEDICINE_STOCK_ADMIN_USERNAME') | default('admin', true) }}"
+          ADMIN_PASSWORD_HASH: "{{ lookup('env', 'MEDICINE_STOCK_ADMIN_PASSWORD_HASH') | default('', true) }}"
           DATABASE_PATH: /app/data/medicines.db
           NEAR_EXPIRY_DAYS: "30"
           SEED_DEMO_DATA: "true"

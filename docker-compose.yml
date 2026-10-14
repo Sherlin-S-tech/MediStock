@@ -7,6 +7,8 @@ services:
       - "5000:5000"
     environment:
       SECRET_KEY: ${SECRET_KEY:-local-demo-change-this-secret}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
       DATABASE_PATH: /app/data/medicines.db
       NEAR_EXPIRY_DAYS: ${NEAR_EXPIRY_DAYS:-30}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}

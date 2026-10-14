@@ -12,16 +12,32 @@ py -m venv .venv
 python -m pip install -r requirements.txt
 $env:SECRET_KEY = "local-demo-secret-change-this-value"
 $env:DATABASE_PATH = ".\data\medicines.db"
+$env:ADMIN_USERNAME = "admin"
+$env:ADMIN_PASSWORD_HASH = python -c "from getpass import getpass; from werkzeug.security import generate_password_hash; print(generate_password_hash(getpass('New admin password: ')))"
 python app.py
 ```
 
-Open http://localhost:5000. Visit `/health` to check service and database connectivity. A fresh, empty database is automatically initialized with three fictional example batches, matching the dashboard demo. Existing inventories are preserved. To add any missing examples manually, run `python scripts/seed_demo_data.py`; it is safe to repeat. Set `SEED_DEMO_DATA=false` to disable automatic seeding. Local SQLite data lives under `data/` and is gitignored. Set a random `SECRET_KEY` outside a short-lived demo.
+Open http://localhost:5000 and sign in with the admin username and password you configured. Visit `/health` to check service and database connectivity. A fresh, empty database is automatically initialized with three fictional example batches, matching the dashboard demo. Existing inventories are preserved. To add any missing examples manually, run `python scripts/seed_demo_data.py`; it is safe to repeat. Set `SEED_DEMO_DATA=false` to disable automatic seeding. Local SQLite data lives under `data/` and is gitignored. Set a random `SECRET_KEY` outside a short-lived demo.
+
+## Admin sign-in
+
+The application screens require an administrator session. The public login page describes the application and its features; the inventory, reports, and dashboard are shown only after sign-in. The `/health` endpoint remains available for container and Jenkins health checks.
+
+Set `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH` in the ignored local `.env` file before starting the application. Do not store a plain-text admin password in Git. Generate a Werkzeug password hash with:
+
+```powershell
+python -c "from getpass import getpass; from werkzeug.security import generate_password_hash; print(generate_password_hash(getpass('New admin password: ')))"
+```
+
+Copy the generated hash into `.env` as `ADMIN_PASSWORD_HASH`, surrounded by literal single quotes because Werkzeug hashes contain dollar signs (for example, `ADMIN_PASSWORD_HASH='$scrypt:...'`). Set `ADMIN_USERNAME=admin` (or your chosen username), and restart the app. For the Python run, set the same names as environment variables before running `python app.py`. The deployment pipeline reads the username and hash from Jenkins Secret Text credentials; configure credential IDs `medicine-stock-admin-username` and `medicine-stock-admin-password-hash` alongside `medicine-stock-secret-key` before enabling Ansible deployment. Rotate credentials through the local environment or Jenkins credential store, not by committing secrets.
 
 ## Docker Compose and persistence
 
 Install Docker Desktop or Docker Engine with Compose. From the project root:
 
 ```sh
+cp .env.example .env
+# Edit .env: set a random SECRET_KEY, ADMIN_USERNAME, and ADMIN_PASSWORD_HASH.
 docker compose build
 docker compose up -d
 docker compose ps
@@ -94,6 +110,8 @@ Install Jenkins LTS by following the [official Linux installation guide](https:/
 4. Save, then select **Build with Parameters**. Set `APP_IMAGE` (default `medicine-stock`), optionally set `APP_TAG_OVERRIDE`, and leave `DEPLOY_ENABLED` off for a CI-only build.
 
 For deployments, create a Jenkins **Secret Text** credential with ID `medicine-stock-secret-key`. It is only read when `DEPLOY_ENABLED` is on and is passed to Ansible through the environment; no secret belongs in the repository. The checked-in inventory targets `localhost`, so Ansible uses the same Docker engine as the Jenkins agent and does not need SSH credentials. For a remote host, configure Ansible's SSH access with Jenkins-managed credentials and make the tested image available to that host; the current playbooks use `pull: false` and do not publish the image to a registry.
+
+The admin login also uses two Jenkins **Secret Text** credentials: `medicine-stock-admin-username` and `medicine-stock-admin-password-hash`. Store the administrator name and a Werkzeug-generated password hash, not the plain-text password. These three credentials are required only when deployment is enabled. The username and password hash are passed to the container as environment values and are not written to the repository.
 
 ### GitHub webhook and manual builds
 
